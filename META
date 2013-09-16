@@ -1,0 +1,6 @@
+name = "bencode"
+version = "0.0.1"
+description = "Simple library for reading/writing bencoded files"
+archive(byte) = "bencode.cma"
+archive(native) = "bencode.cmxa"
+exists_if = "bencode.cma"
