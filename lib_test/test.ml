@@ -1,4 +1,4 @@
-let torrent_file = "/home/rudi/reps/bencode/test.torrent"
+let torrent_file = "test.torrent"
 
 let () =
   let bencode = Bencode.decode (`File_path torrent_file) in

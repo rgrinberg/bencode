@@ -19,6 +19,6 @@ clean:
 
 test:
 	$(OCAMLBUILD) lib_test/test.native
-	./native
+	./test.native
 
 .PHONY: build clean install uninstall test
