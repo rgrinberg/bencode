@@ -2,7 +2,8 @@ NAME = bencode
 DOC = bencode.docdir/index.html
 OCAMLBUILD = ocamlbuild -use-ocamlfind
 TARGETS = bencode.cma bencode.cmxa bencode.cmi bencode.a
-LIB = $(addprefix _build/, $(TARGETS)) 
+INSTALL_TARGETS = $(TARGETS) bencode.mli
+LIB = $(addprefix _build/lib/, $(TARGETS)) 
 INSTALL = $(LIB)
 
 all:
@@ -21,4 +22,4 @@ test:
 	$(OCAMLBUILD) lib_test/test.native
 	./test.native
 
-.PHONY: build clean install uninstall test
+.PHONY: build clean install uninstall test all
