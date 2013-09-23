@@ -16,22 +16,36 @@ let format_list l ~f =
   Buffer.add_string buf "[\n";
   l |> List.iter (fun e -> 
       f buf e;
-      Buffer.add_char buf ';';
     );
   Buffer.add_char buf ']';
   Buffer.contents buf
 
-let rec pretty_print = function
-  | Integer x -> string_of_int x
-  | String x -> Printf.sprintf "<string:%d>" (String.length x)
-  | List l ->
-    format_list l ~f:(fun buf e -> 
-        Buffer.add_string buf (pretty_print e))
-  | Dict t ->
-    let format_tuple s t =
-      Printf.sprintf "(\"%s\", %s)" s (pretty_print t) in
-    format_list t ~f:(fun buf (s, t) ->
-        Buffer.add_string buf (format_tuple s t))
+let empty_string ~len =
+  let s = String.create len in
+  for i = 0 to len - 1 do
+    s.[i] <- ' '
+  done; s
+
+let spaces level = empty_string (level * 2)
+
+let rec pretty_print =
+  let rec loop level = function
+    | Integer x -> string_of_int x
+    | String x -> Printf.sprintf "<string:%d>" (String.length x)
+    | List l ->
+      format_list l ~f:(fun buf e -> 
+          Buffer.add_string buf (spaces level);
+          Buffer.add_string buf (loop (succ level) e);
+          Buffer.add_string buf ";\n"
+        )
+    | Dict t ->
+      let format_tuple s t =
+        Printf.sprintf "(\"%s\", %s)" s (loop (succ level) t) in
+      format_list t ~f:(fun buf (s, t) ->
+          Buffer.add_string buf (spaces level);
+          Buffer.add_string buf (format_tuple s t);
+          Buffer.add_string buf ";\n")
+  in loop 1
 
 module Str_conv = struct
   open Printf
@@ -58,21 +72,21 @@ let rec encode_to_string t =
 
 let decode = function
   | `Channel ch -> 
-      Bencode_parse.bencode Lex.bencode (Lexing.from_channel ch)
+    Bencode_parse.bencode Lex.bencode (Lexing.from_channel ch)
   | `File_path path ->
-      let ch = open_in path in
-      let t = Bencode_parse.bencode Lex.bencode (Lexing.from_channel ch) in
-      close_in ch;
-      t
+    let ch = open_in path in
+    let t = Bencode_parse.bencode Lex.bencode (Lexing.from_channel ch) in
+    close_in ch;
+    t
   | `String s -> Bencode_parse.bencode Lex.bencode (Lexing.from_string s)
-  
+
 let encode dst t =
   let encoded = encode_to_string t in
   match dst with
   | `Channel out -> output_string out encoded
   | `File_path path ->
-      let ch = open_out path in
-      output_string ch encoded;
-      close_out ch
+    let ch = open_out path in
+    output_string ch encoded;
+    close_out ch
   | `Buffer buf -> Buffer.add_string buf encoded
 
