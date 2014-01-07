@@ -1,3 +1,4 @@
+OPAM_DEPENDS="ocamlfind"
 case "$OCAML_VERSION,$OPAM_VERSION" in
     4.01.0,1.1.0) ppa=avsm/ocaml41+opam11 ;;
     *) echo Unknown $OCAML_VERSION,$OPAM_VERSION; exit 1 ;;
@@ -17,6 +18,7 @@ opam --git-version
 
 # opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
 opam init
+opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
 make
