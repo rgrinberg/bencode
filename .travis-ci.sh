@@ -20,3 +20,4 @@ opam init
 
 eval `opam config env`
 make
+make test
