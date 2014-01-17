@@ -91,13 +91,13 @@ let rec encode_to_string t =
 
 let decode = function
   | `Channel ch -> 
-    Bencode_parse.bencode Lex.bencode (Lexing.from_channel ch)
+    Bencode_parse.bencode Bencode_lex.bencode (Lexing.from_channel ch)
   | `File_path path ->
     let ch = open_in path in
-    let t = Bencode_parse.bencode Lex.bencode (Lexing.from_channel ch) in
+    let t = Bencode_parse.bencode Bencode_lex.bencode (Lexing.from_channel ch) in
     close_in ch;
     t
-  | `String s -> Bencode_parse.bencode Lex.bencode (Lexing.from_string s)
+  | `String s -> Bencode_parse.bencode Bencode_lex.bencode (Lexing.from_string s)
 
 let encode dst t =
   let encoded = encode_to_string t in
