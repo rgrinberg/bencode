@@ -18,6 +18,9 @@ uninstall:
 clean:
 	$(OCAMLBUILD) -clean
 
+doc:
+	$(OCAMLBUILD) bencode.docdir/index.html
+
 test:
 	$(OCAMLBUILD) lib_test/test.native
 	./test.native
@@ -30,4 +33,4 @@ qcheck:
 	$(OCAMLBUILD) -use-ocamlfind -package qcheck lib_test/test_qcheck.native
 	./test_qcheck.native
 
-.PHONY: build clean install uninstall test all ounit qcheck
+.PHONY: build clean install uninstall test all ounit qcheck doc
