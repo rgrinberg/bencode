@@ -11,6 +11,25 @@ type dst = [
   | `File_path of string
   | `Buffer of Buffer.t] 
 
+let rec eq t1 t2 = match t1, t2 with
+  | Integer i1, Integer i2 -> i1 = i2
+  | String s1, String s2 -> s1 = s2
+  | List l1, List l2 ->
+    (try List.for_all2 eq l1 l2 with Invalid_argument _ -> false)
+  | Dict d1, Dict d2 ->
+    begin try
+      (* lists are sorted *)
+      List.for_all2 (fun (s1,t1)(s2,t2) -> s1=s2 && eq t1 t2) d1 d2 
+    with Invalid_argument _ -> false
+    end
+  | _ -> false
+
+let hash t = Hashtbl.hash t
+
+let dict_of_list l =
+  let l = List.sort (fun (s1,_)(s2,_) -> String.compare s1 s2) l in
+  Dict l
+
 let format_list l ~f = 
   let buf = Buffer.create 10 in
   Buffer.add_string buf "[\n";
@@ -89,4 +108,3 @@ let encode dst t =
     output_string ch encoded;
     close_out ch
   | `Buffer buf -> Buffer.add_string buf encoded
-

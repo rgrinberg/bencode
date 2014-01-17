@@ -22,4 +22,12 @@ test:
 	$(OCAMLBUILD) lib_test/test.native
 	./test.native
 
-.PHONY: build clean install uninstall test all
+ounit:
+	$(OCAMLBUILD) -use-ocamlfind -package oUnit lib_test/test_ounit.native
+	./test_ounit.native
+
+qcheck:
+	$(OCAMLBUILD) -use-ocamlfind -package qcheck lib_test/test_qcheck.native
+	./test_qcheck.native
+
+.PHONY: build clean install uninstall test all ounit qcheck

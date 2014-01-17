@@ -16,6 +16,14 @@ type dst = [
   | `File_path of string
   | `Buffer of Buffer.t]
 
+val eq : t -> t -> bool
+
+val hash : t -> int
+
+(** sort list and wrap it in [Dict]. The list should not contain
+    the same key twice. *)
+val dict_of_list : (string*t) list -> t
+
 (** [pretty_print] is not tail recursive (or pretty) *)
 
 val pretty_print : t -> string
@@ -29,3 +37,4 @@ val encode : [< dst] -> t -> unit
 (** [encode_to_string] is not tail recursive *)
 
 val encode_to_string : t -> string
+
