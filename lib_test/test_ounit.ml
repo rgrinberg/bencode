@@ -1,10 +1,10 @@
-
-open OUnit
+open OUnit2
+module OUnit = OUnit2
 
 module B = Bencode
 module BS = Bencode_streaming
 
-let test1 () =
+let test1 _ =
   let s = "li42ei0ei-200ee" in
   match BS.parse_string s with
   | BS.ParseError msg ->
@@ -14,7 +14,7 @@ let test1 () =
   | BS.ParseOk b ->
     OUnit.assert_equal (B.List [B.Integer 42; B.Integer 0; B.Integer ~-200]) b
 
-let test2 () =
+let test2 _ =
   let b =
     B.dict_of_list [
       "foo", B.Integer 42;
@@ -27,7 +27,7 @@ let test2 () =
   let b' = BS.of_string s in
   OUnit.assert_equal ~cmp:B.eq ~printer:BS.to_string b b'
 
-let test3 () =
+let test3 _ =
   let b = B.dict_of_list [
     "a", B.Integer 1;
     "b", B.String "bbbb";
