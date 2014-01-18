@@ -1,4 +1,4 @@
-OPAM_DEPENDS="ocamlfind"
+OPAM_DEPENDS="ocamlfind qcheck ounit"
 case "$OCAML_VERSION,$OPAM_VERSION" in
     4.01.0,1.1.0) ppa=avsm/ocaml41+opam11 ;;
     *) echo Unknown $OCAML_VERSION,$OPAM_VERSION; exit 1 ;;
