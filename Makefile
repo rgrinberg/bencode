@@ -21,7 +21,7 @@ clean:
 doc:
 	$(OCAMLBUILD) bencode.docdir/index.html
 
-test:
+test: ounit qcheck
 	$(OCAMLBUILD) lib_test/test.native
 	./test.native
 
