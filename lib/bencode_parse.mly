@@ -24,6 +24,8 @@ dict:
 bencode:
   | INT { Integer $1 }
   | STRING { String $1 }
+  | LIST_START END { List [] }
+  | DICT_START END { Dict [] }
   | LIST_START bencodes END { List $2 }
   | DICT_START dict END { Dict $2 }
 
