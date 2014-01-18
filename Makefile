@@ -26,11 +26,11 @@ test:
 	./test.native
 
 ounit:
-	$(OCAMLBUILD) -use-ocamlfind -package oUnit lib_test/test_ounit.native
+	$(OCAMLBUILD) -package oUnit lib_test/test_ounit.native
 	./test_ounit.native
 
 qcheck:
-	$(OCAMLBUILD) -use-ocamlfind -package qcheck lib_test/test_qcheck.native
+	$(OCAMLBUILD) -package qcheck lib_test/test_qcheck.native
 	./test_qcheck.native
 
 .PHONY: build clean install uninstall test all ounit qcheck doc
