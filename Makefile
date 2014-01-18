@@ -15,6 +15,10 @@ install: all
 uninstall:
 	ocamlfind remove $(NAME)
 
+reinstall:
+	make uninstall
+	make install
+
 clean:
 	$(OCAMLBUILD) -clean
 
