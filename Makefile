@@ -1,16 +1,19 @@
 NAME = bencode
 DOC = bencode.docdir/index.html
 OCAMLBUILD = ocamlbuild -use-ocamlfind
-TARGETS = bencode.cma bencode.cmxa bencode.cmi bencode.a
-INSTALL_TARGETS = $(TARGETS) bencode.mli
-LIB = $(addprefix _build/lib/, $(TARGETS)) 
-INSTALL = $(LIB)
+TARGETS = bencode.cma bencode.cmxa bencode.a
+INSTALL_TARGETS = $(addprefix _build/, $(TARGETS))
+INSTALL_TARGETS += _build/lib/*.cmi
+INSTALL_TARGETS += _build/lib/*.cmo
+INSTALL_TARGETS += _build/lib/*.o
+INSTALL_TARGETS += _build/lib/*.mli
+INSTALL_TARGETS += _build/lib/*.cmx
 
 all:
 	$(OCAMLBUILD) $(TARGETS) $(DOC)
 
 install: all
-	ocamlfind install $(NAME) META $(INSTALL)
+	ocamlfind install $(NAME) META $(INSTALL_TARGETS)
 
 uninstall:
 	ocamlfind remove $(NAME)
