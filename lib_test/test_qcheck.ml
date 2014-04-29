@@ -20,7 +20,7 @@ let check_decode_encode =
   in
   let prop b = B.eq (B.decode (`String (B.encode_to_string b))) b in
   let name = "bencode_decode_encode_bij" in
-  mk_test ~name ~pp:BS.to_string ~size:BS.size gen prop
+  mk_test ~name ~pp:BS.Encode.to_string ~size:BS.Encode.size gen prop
 
 let check_decode_encode_streaming =
   let gen = Arbitrary.(
@@ -36,9 +36,9 @@ let check_decode_encode_streaming =
         ; sub
         ]))
   in
-  let prop b = B.eq (BS.of_string (BS.to_string b)) b in
+  let prop b = B.eq (BS.Decode.parse_string_exn (BS.Encode.to_string b)) b in
   let name = "bencode_streaming_decode_encode_bij" in
-  mk_test ~name ~pp:BS.to_string ~n:2_000 ~size:BS.size gen prop
+  mk_test ~name ~pp:BS.Encode.to_string ~n:2_000 ~size:BS.Encode.size gen prop
 
 let check_decode_encode_token =
   let (gen : Bencode_token.t list Arbitrary.t) = Arbitrary.(
