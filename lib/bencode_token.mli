@@ -13,6 +13,8 @@ type token = t
 
 type 'a sequence = ('a -> unit) -> unit
 
+val to_string : t -> string
+
 (** {2 Encode}
 serializing a stream of tokens to a buffer or a channel, in text form *)
 
@@ -47,7 +49,7 @@ module Decode : sig
 
   val of_chan : in_channel -> t
 
-  val manual : t
+  val manual : unit -> t
     (** Input will have to provided by hand *)
 
   val feed : t -> string -> int -> int -> unit

@@ -13,6 +13,13 @@ type token = t
 
 type 'a sequence = ('a -> unit) -> unit
 
+let to_string = function
+  | `I i -> string_of_int i
+  | `S s -> s
+  | `BeginDict -> "d"
+  | `BeginList -> "l"
+  | `End -> "e"
+
 module Encode = struct
   type t = {
     str : string -> unit;
@@ -137,7 +144,8 @@ module Decode = struct
     dec.refill <- refill;
     dec
 
-  let manual = { _default with refill = (fun () -> Refill_await); }
+  let manual () =
+    { _default with refill = (fun () -> Refill_await); }
 
   let feed dec s j len' =
     match dec.state with
