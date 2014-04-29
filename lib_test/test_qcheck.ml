@@ -38,11 +38,29 @@ let check_decode_encode_streaming =
   in
   let prop b = B.eq (BS.of_string (BS.to_string b)) b in
   let name = "bencode_streaming_decode_encode_bij" in
-  mk_test ~name ~pp:BS.to_string ~size:BS.size gen prop
+  mk_test ~name ~pp:BS.to_string ~n:2_000 ~size:BS.size gen prop
+
+let check_decode_encode_token =
+  let (gen : Bencode_token.t list Arbitrary.t) = Arbitrary.(
+    list (choose
+      [ lift (fun i -> `I i) small_int
+      ; lift (fun s -> `S s) string
+      ; among [ `BeginDict; `BeginList; `End ] ]
+    )
+  ) in
+  let prop l =
+    let s = Bencode_token.Easy.to_string l in
+    let l' = Bencode_token.Easy.(of_string_exn s) in
+    l = l'
+  in
+  let name = "bencode_token_decode_encode_bij" in
+  let pp = PP.list (fun b -> Bencode_token.Easy.to_string [b]) in
+  mk_test ~name ~n:2_000 ~pp ~size:List.length gen prop
 
 let props =
   [ check_decode_encode
   ; check_decode_encode_streaming
+  ; check_decode_encode_token
   ]
 
 let () =
