@@ -108,3 +108,27 @@ let encode dst t =
     output_string ch encoded;
     close_out ch
   | `Buffer buf -> Buffer.add_string buf encoded
+
+let as_string = function
+  | String s -> Some s
+  | _ -> None
+
+let as_int = function
+  | Integer i -> Some i
+  | _ -> None
+
+let as_list = function
+  | List l -> Some l
+  | _ -> None
+
+let as_dict = function
+  | Dict l -> Some l
+  | _ -> None
+
+let dict_get b key = match b with
+  | Dict l ->
+      begin try
+        Some (List.assoc key l)
+      with Not_found -> None
+      end
+  | _ -> None

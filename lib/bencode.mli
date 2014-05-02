@@ -38,3 +38,10 @@ val encode : [< dst] -> t -> unit
 
 val encode_to_string : t -> string
 
+(** {2 Helpers} *)
+
+val as_string : t -> string option
+val as_int : t -> int option
+val as_list : t -> t list option
+val as_dict : t -> (string * t) list option
+val dict_get : t -> string -> t option
