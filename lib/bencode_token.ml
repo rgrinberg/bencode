@@ -82,8 +82,8 @@ module Decode = struct
 
   type t = {
     mutable cur_i : int;  (* when reading int, or string length *)
-    mutable cur_s : string; (* when reading string *)
-    mutable buf : string; (* input buffer *)
+    mutable cur_s : Bytes.t; (* when reading string *)
+    mutable buf : Bytes.t; (* input buffer *)
     mutable i : int;
     mutable len : int;
     mutable state : state;
@@ -94,8 +94,8 @@ module Decode = struct
   
   let _default = {
     cur_i = 0;
-    cur_s = "";
-    buf = "";
+    cur_s = Bytes.empty;
+    buf = Bytes.empty;
     i = 0;
     len = 0;
     state = Start;
@@ -104,11 +104,22 @@ module Decode = struct
 
   let of_string s = {
     _default with
-    buf = s;
+    buf = Bytes.of_string s;
     len = String.length s;
   }
 
+  let of_bytes s = {
+    _default with
+    buf = s;
+    len = Bytes.length s;
+  }
+
   let of_slice s i len = {
+    _default with
+    buf = Bytes.of_string s; i; len;
+  }
+
+  let of_bytes_slice s i len = {
     _default with
     buf = s; i; len;
   }
@@ -116,12 +127,12 @@ module Decode = struct
   (* move the active slice of buffer to the beginning.
     postcondition: dec.i = 0 *)
   let _move_beginning dec =
-    String.blit dec.buf dec.i dec.buf 0 dec.len;
+    Bytes.blit dec.buf dec.i dec.buf 0 dec.len;
     dec.i <- 0
 
   let of_chan ic =
     let len = 256 in
-    let buf = String.make len ' ' in
+    let buf = Bytes.make len ' ' in
     let dec = { _default with buf; len; } in
     let refill () =
       assert (dec.len >= 0);
@@ -129,7 +140,7 @@ module Decode = struct
       if dec.len > 0 then _move_beginning dec;
       dec.i <- 0;
       try
-        let size = String.length dec.buf - dec.len in
+        let size = Bytes.length dec.buf - dec.len in
         let n = input ic dec.buf dec.len size in
         Refill_read n
       with
@@ -147,7 +158,7 @@ module Decode = struct
   let manual () =
     { _default with refill = (fun () -> Refill_await); }
 
-  let feed dec s j len' =
+  let _feed _blit dec s j len' =
     match dec.state with
     | StateError _ -> ()
     | Start
@@ -157,14 +168,17 @@ module Decode = struct
       _move_beginning dec;
       dec.i <- 0;
       (* resize if needed *)
-      if len' + dec.len > String.length dec.buf
+      if len' + dec.len > Bytes.length dec.buf
         then begin
-          let buf' = String.make (2*(len' + dec.len)) ' ' in
-          String.blit dec.buf 0 buf' 0 dec.len;
+          let buf' = Bytes.make (2*(len' + dec.len)) ' ' in
+          Bytes.blit dec.buf 0 buf' 0 dec.len;
           dec.buf <- buf';
         end;
-      String.blit s j dec.buf dec.len len';
+      _blit s j dec.buf dec.len len';
       ()
+
+  let feed = _feed String.blit
+  let feed_bytes = _feed Bytes.blit
 
   (* how to fail: set state to an error *)
   let _fail : t -> ('a, Buffer.t, unit, result) format4 -> 'a = fun dec fmt ->
@@ -192,22 +206,22 @@ module Decode = struct
     | _ when dec.len = 0 -> _refill dec
     | ReadString ->
       (* bulk transfer. [n] is how many bytes we can transfer right now *)
-      let n = min (String.length dec.cur_s - dec.cur_i) dec.len in
-      String.blit dec.buf dec.i dec.cur_s dec.cur_i n;
+      let n = min (Bytes.length dec.cur_s - dec.cur_i) dec.len in
+      Bytes.blit dec.buf dec.i dec.cur_s dec.cur_i n;
       dec.i <- dec.i + n;
       dec.cur_i <- dec.cur_i + n;
       dec.len <- dec.len - n;
-      if String.length dec.cur_s = dec.cur_i
+      if Bytes.length dec.cur_s = dec.cur_i
         then begin
-          let s = dec.cur_s in
-          dec.cur_s <- "";
+          let s = Bytes.unsafe_to_string dec.cur_s in
+          dec.cur_s <- Bytes.empty;
           dec.state <- Start;
           Next (`S s)  (* done! *)
         end
         else next dec
     | _ ->
       (* consume one char *)
-      let c = dec.buf.[dec.i] in
+      let c = Bytes.get dec.buf dec.i in
       dec.len <- dec.len - 1;
       dec.i <- dec.i + 1;
       begin match dec.state, c with
@@ -261,7 +275,7 @@ module Decode = struct
       | ReadStringLen, ':' ->
         (* allocate buffer of the correct size *)
         dec.state <- ReadString;
-        dec.cur_s <- String.make dec.cur_i ' ';
+        dec.cur_s <- Bytes.make dec.cur_i ' ';
         dec.cur_i <- 0;
         next dec
       | ReadInt _, c ->
@@ -314,6 +328,10 @@ module Easy = struct
 
   let of_string s =
     let dec = Decode.of_string s in
+    Decode.to_list dec
+
+  let of_bytes s =
+    let dec = Decode.of_bytes s in
     Decode.to_list dec
 
   let of_string_exn s =

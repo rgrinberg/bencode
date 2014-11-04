@@ -40,7 +40,7 @@ module Encode = struct
       write_char 'e'
     and write_int i =
       let s = string_of_int i in
-      String.blit s 0 buf !pos (String.length s);
+      Bytes.blit_string s 0 buf !pos (String.length s);
       pos := !pos + String.length s
     and write_str s =
       write_int (String.length s);
@@ -48,16 +48,19 @@ module Encode = struct
       String.blit s 0 buf !pos (String.length s);
       pos := !pos + String.length s
     and write_char c =
-      buf.[!pos] <- c;
+      Bytes.set buf !pos c;
       incr pos
     in
     append t
 
-  let to_string t =
+  let to_bytes t =
     let len = size t in
-    let s = String.create len in
+    let s = Bytes.create len in
     write_in_string t s 0;
     s
+
+  let to_string t =
+    Bytes.unsafe_to_string (to_bytes t)
 
   let to_buf buf t =
     Buffer.add_string buf (to_string t)
@@ -146,11 +149,15 @@ module Decode = struct
   }
 
   let of_string s = create (BT.Decode.of_string s)
+  let of_bytes s = create (BT.Decode.of_bytes s)
   let of_chan oc = create (BT.Decode.of_chan oc)
   let manual () = create (BT.Decode.manual ())
 
   let feed dec s i len =
     BT.Decode.feed dec.dec s i len
+
+  let feed_bytes dec s i len =
+    BT.Decode.feed_bytes dec.dec s i len
 
   (* how to fail: set state to an error *)
   let _fail : t -> ('a, Buffer.t, unit, parse_result) format4 -> 'a = fun dec fmt ->

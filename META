@@ -1,5 +1,6 @@
 name = "bencode"
 version = "0.2"
+requires = "base-bytes"
 description = "Simple library for reading/writing bencoded files"
 archive(byte) = "bencode.cma"
 archive(native) = "bencode.cmxa"

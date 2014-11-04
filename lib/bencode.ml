@@ -39,11 +39,7 @@ let format_list l ~f =
   Buffer.add_char buf ']';
   Buffer.contents buf
 
-let empty_string ~len =
-  let s = String.create len in
-  for i = 0 to len - 1 do
-    s.[i] <- ' '
-  done; s
+let empty_string ~len = String.make len ' '
 
 let spaces level = empty_string (level * 2)
 
