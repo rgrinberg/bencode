@@ -1,9 +1,11 @@
 bencode
 =======
-Bencode (.torrent file format) reader/writer in OCaml without any
+
+Bencode (`.torrent` file format) reader/writer in OCaml without any
 external dependencies.
 
-See lib/bencode.mli. Usage is straightforward.
+See `lib/bencode.mli`. Usage is straightforward. There is also a streaming
+API in modules `Bencode_streaming` and `Bencode_token`.
 
 ## Installation
 For a findlib based install
@@ -22,7 +24,7 @@ Bencode.decode (`File_path "test.torrent")
 Will return a data structure representing the bencoded form of the following
 type:
 ```
-type t = 
+type t =
   | Integer of int
   | String of string
   | List of t list
