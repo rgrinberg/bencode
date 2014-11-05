@@ -29,6 +29,7 @@ and bencode = parse
   | 'l' { LIST_START }
   | 'd' { DICT_START }
   | 'e' { END }
+  | [' ' '\t' '\n'] { bencode lexbuf }  (* whitespace *)
   | _ as c {
     Printf.printf "Urecognized char: %c. Pos: %d \n" c (lexeme_start lexbuf);
     failwith "" 
