@@ -3,13 +3,11 @@
   open Bencode_parse
 }
 
-rule read_fixed buf n = parse
+rule read_fixed buf i n = parse
   | _ as c { 
-    Buffer.add_char buf c;
-    if n = 1 then begin
-      Buffer.contents buf
-    end
-    else read_fixed buf (n-1) lexbuf
+    Bytes.set buf i c;
+    if i+1 = n then Bytes.unsafe_to_string buf
+    else read_fixed buf (i+1) n lexbuf
   }
   | eof { failwith "not enough input" }
 
@@ -19,7 +17,7 @@ and bencode = parse
     let len = int_of_string (String.sub str 0 (String.length str - 1)) in
     STRING (
       if len = 0 then ""
-      else read_fixed (Buffer.create len) len lexbuf
+      else read_fixed (Bytes.make len ' ') 0 len lexbuf
       )
   }
   | 'i' '-'? ['0'-'9']+ 'e' { 

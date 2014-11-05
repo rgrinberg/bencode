@@ -9,7 +9,9 @@
 %token EOF
 
 %start bencode
+%start bencodes
 %type <Bencode_types.t> bencode
+%type <Bencode_types.t list> bencodes
 
 %%
 
