@@ -1,6 +1,6 @@
 NAME = bencode
 DOC = bencode.docdir/index.html
-OCAMLBUILD = ocamlbuild -use-ocamlfind
+OCAMLBUILD = ocamlbuild -use-ocamlfind -package bytes
 TARGETS = bencode.cma bencode.cmxa bencode.a
 INSTALL_TARGETS = $(addprefix _build/, $(TARGETS))
 INSTALL_TARGETS += _build/lib/*.cmi

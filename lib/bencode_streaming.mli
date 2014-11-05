@@ -11,13 +11,14 @@ module Encode : sig
   val size : bencode -> int
     (** Size needed for serialization, in bytes *)
 
-  val write_in_string : t -> string -> int -> unit
+  val write_in_string : t -> Bytes.t -> int -> unit
     (** [write_in_string v buf o] writes the value [v] in  the string,
         starting at offset [o]. The portion of the string starting from [o]
         must be big enough (ie >= [size v]) *)
 
   val to_buf : Buffer.t -> t -> unit
   val to_string : t -> string
+  val to_bytes : t -> Bytes.t
   val to_chan : out_channel -> t -> unit
   val fmt : Format.formatter -> t -> unit
 
@@ -51,6 +52,7 @@ module Decode : sig
   val create : Bencode_token.Decode.t -> t
 
   val of_string : string -> t
+  val of_bytes : Bytes.t -> t
   val of_chan : in_channel -> t
   val manual : unit -> t
 
@@ -63,6 +65,8 @@ module Decode : sig
   val feed : t -> string -> int -> int -> unit
   (** Provide some more input (the subtstring). Only useful for
       manual, non-blocking parsing. *)
+
+  val feed_bytes : t -> Bytes.t -> int -> int -> unit
 
   val next : t -> parse_result
   (** Parse next value *)

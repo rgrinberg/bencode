@@ -39,11 +39,7 @@ let format_list l ~f =
   Buffer.add_char buf ']';
   Buffer.contents buf
 
-let empty_string ~len =
-  let s = String.create len in
-  for i = 0 to len - 1 do
-    s.[i] <- ' '
-  done; s
+let empty_string ~len = String.make len ' '
 
 let spaces level = empty_string (level * 2)
 
@@ -108,6 +104,32 @@ let encode dst t =
     output_string ch encoded;
     close_out ch
   | `Buffer buf -> Buffer.add_string buf encoded
+
+type 'a sequence = ('a -> unit) -> unit
+
+let decode_seq src k = match src with
+  | `Channel ch -> 
+    let l = Bencode_parse.bencodes Bencode_lex.bencode (Lexing.from_channel ch)
+    in List.iter k l
+  | `File_path path ->
+    let ch = open_in path in
+    let l = Bencode_parse.bencodes Bencode_lex.bencode (Lexing.from_channel ch) in
+    close_in ch;
+    List.iter k l
+  | `String s ->
+    let l = Bencode_parse.bencodes Bencode_lex.bencode (Lexing.from_string s) in
+    List.iter k l
+
+let encode_seq dst seq =
+  match dst with
+  | `Channel out ->
+    seq (fun d -> output_string out (encode_to_string d))
+  | `File_path path ->
+    let ch = open_out path in
+    seq (fun d -> output_string ch (encode_to_string d));
+    close_out ch
+  | `Buffer buf ->
+    seq (fun d -> Buffer.add_string buf (encode_to_string d))
 
 let as_string = function
   | String s -> Some s

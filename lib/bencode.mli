@@ -38,6 +38,10 @@ val encode : [< dst] -> t -> unit
 
 val encode_to_string : t -> string
 
+type 'a sequence = ('a -> unit) -> unit
+val decode_seq : [< src] -> t sequence
+val encode_seq : [< dst] -> t sequence -> unit
+
 (** {2 Helpers} *)
 
 val as_string : t -> string option

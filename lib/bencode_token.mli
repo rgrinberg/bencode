@@ -45,7 +45,11 @@ module Decode : sig
 
   val of_string : string -> t
 
+  val of_bytes : Bytes.t -> t
+
   val of_slice : string -> int -> int -> t
+
+  val of_bytes_slice : Bytes.t -> int -> int -> t
 
   val of_chan : in_channel -> t
 
@@ -54,6 +58,8 @@ module Decode : sig
 
   val feed : t -> string -> int -> int -> unit
     (** Feed a substring to the decoder *)
+
+  val feed_bytes : t -> Bytes.t -> int -> int -> unit
 
   val next : t -> result
     (** Next token, or another result *)
@@ -73,6 +79,8 @@ module Easy : sig
   val output : out_channel -> token list -> unit
 
   val of_string : string -> token list option
+
+  val of_bytes : Bytes.t -> token list option
 
   val of_string_exn : string -> token list
     (** @raise Failure if the string isn't valid *)
