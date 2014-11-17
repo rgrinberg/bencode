@@ -91,7 +91,7 @@ module Decode = struct
   }
 
   let _refill_stop () = Refill_eof
-  
+
   let _default = {
     cur_i = 0;
     cur_s = Bytes.empty;
@@ -166,15 +166,14 @@ module Decode = struct
     | ReadStringLen
     | ReadString ->
       _move_beginning dec;
-      dec.i <- 0;
       (* resize if needed *)
-      if len' + dec.len > Bytes.length dec.buf
-        then begin
-          let buf' = Bytes.make (2*(len' + dec.len)) ' ' in
-          Bytes.blit dec.buf 0 buf' 0 dec.len;
-          dec.buf <- buf';
-        end;
+      if len' + dec.len > Bytes.length dec.buf then (
+        let buf' = Bytes.make (2*(len' + dec.len)) ' ' in
+        Bytes.blit dec.buf 0 buf' 0 dec.len;
+        dec.buf <- buf';
+      );
       _blit s j dec.buf dec.len len';
+      dec.len <- dec.len + len';
       ()
 
   let feed = _feed String.blit
