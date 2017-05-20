@@ -37,11 +37,23 @@ let test3 _ =
   let b' = BS.Decode.parse_string_exn s in
   OUnit.assert_equal ~cmp:B.eq ~printer:BS.Encode.to_string b b'
 
+(* issue #4 *)
+let regression_4 _ =
+  let s = BS.Encode.to_string (B.Integer min_int) in
+  OUnit.assert_equal ~printer:(Printf.sprintf "%S")
+    "i-4611686018427387904e" s;
+  OUnit.assert_equal ~printer:BS.Encode.to_string ~cmp:B.eq
+    (B.Integer min_int) (BS.Decode.parse_string_exn s);
+  ()
+
 let suite =
   "test_bencode" >:::
     [ "test1" >:: test1;
       "test2" >:: test2;
       "test3" >:: test3;
+      "regression" >:::
+        [ "#4" >:: regression_4;
+        ]
     ]
 
 let () =
