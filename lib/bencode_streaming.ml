@@ -8,10 +8,13 @@ type 'a sequence = ('a -> unit) -> unit
 (** {2 Serialization (encoding)} *)
 
 module Encode = struct
+  let _len_min_int = String.length (string_of_int min_int)
+
   (* length of an encoded int, in bytes *)
   let _len_int i =
     match i with
     | 0 -> 1
+    | _ when i=min_int -> _len_min_int
     | _ when i < 0 -> 2 + int_of_float (log10 (float_of_int ~-i))
     | _ -> 1 + int_of_float (log10 (float_of_int i))
 
