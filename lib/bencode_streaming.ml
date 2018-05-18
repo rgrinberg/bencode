@@ -1,4 +1,3 @@
-
 type t = Bencode.t
 open Bencode
 
@@ -137,7 +136,7 @@ module Decode = struct
   type partial_state =
     | PS_L of bencode list
     | PS_D of (string*bencode)list  (* in dictionary *)
-    | PS_D_key of string * (string*bencode)list (* parsed key, wait for value *) 
+    | PS_D_key of string * (string*bencode)list (* parsed key, wait for value *)
 
   type t = {
     dec : Bencode_token.Decode.t;
