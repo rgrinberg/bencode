@@ -1,11 +1,18 @@
-opam-version: "1"
+opam-version: "1.2"
+dev-repo: "https://github.com/rgrinberg/bencode"
+homepage: "https://github.com/rgrinberg/bencode"
+bug-reports: "https://github.com/rgrinberg/issues/"
 maintainer: "rudi.grinberg@gmail.com"
 authors: [ "Rudi Grinberg" "Simon Cruanes" ]
 license: "MIT"
+available: [ ocaml-version >= "4.00.1" ]
+
 build: [
   [make "all"]
-  [make "install"]
 ]
+build-test: [
+  [make "test"]
+]
+install: [ [make "install"] ]
 remove: [[make "uninstall"]]
 depends: ["ocamlfind"]
-ocaml-version: [>="4.00.1"]
