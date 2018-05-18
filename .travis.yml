@@ -3,8 +3,9 @@ env:
     - PACKAGE="bencode"
     - OPAM_VERSION=1.2.2
   matrix:
-    - OCAML_VERSION=4.00
-    - OCAML_VERSION=4.01
+    # travis-opam depends on jbuilder which doesn't care about backwards compat for these below
+    #- OCAML_VERSION=4.00 # ^--
+    #- OCAML_VERSION=4.01 # ^--
     - OCAML_VERSION=4.02
     - OCAML_VERSION=4.03
     - OCAML_VERSION=4.04
