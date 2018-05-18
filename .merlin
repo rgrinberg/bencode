@@ -4,6 +4,6 @@ B _build
 B _build/lib
 B _build/lib_test
 
-PKG oUnit
+PKG ounit
 PKG qcheck
 FLAG -safe-string

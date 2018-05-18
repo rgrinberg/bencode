@@ -33,7 +33,7 @@ test: ounit qcheck
 	./test.native
 
 ounit:
-	$(OCAMLBUILD) -package oUnit lib_test/test_ounit.native
+	$(OCAMLBUILD) -package ounit lib_test/test_ounit.native
 	./test_ounit.native
 
 qcheck:

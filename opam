@@ -15,4 +15,8 @@ build-test: [
 ]
 install: [ [make "install"] ]
 remove: [[make "uninstall"]]
-depends: ["ocamlfind"]
+depends: [
+  "ocamlfind" {build}
+  "ounit"     {test}
+  "qcheck"    {test}
+]
