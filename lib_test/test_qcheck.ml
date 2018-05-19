@@ -11,7 +11,8 @@ let arb_bencode =
     let open QCheck.Gen in
     let base =
       frequency
-        [ 4, (small_int >|= fun i -> B.Integer (Int64.of_int i));
+        [ 2, (ui64 >|= fun i -> B.Integer i);
+          2, (small_int >|= fun i -> B.Integer (Int64.of_int i));
           1, (oneofl [Int64.min_int; Int64.max_int] >|= fun i -> B.Integer i);
           5, (string >|= fun s -> B.String s);
         ]
@@ -26,11 +27,18 @@ let arb_bencode =
             2, base;
           ]) n
   in
+  let rec shrink_int64 : int64 Q.Shrink.t =
+    fun x ->
+      let open Q.Iter in
+      ( ( return @@ Int64.div x 2_L )
+        <+> (return @@ Int64.(sub x one))
+      ) >>= shrink_int64
+  in
   let rec shrink b =
     let open Q.Iter in
     match b with
       | B.List l -> Q.Shrink.list ~shrink l >|= fun l->B.List l
-      | B.Integer i -> Q.Shrink.nil i >|= fun i -> B.Integer i (* TODO I couldn't figure out how to implement a shrinking function *)
+      | B.Integer i -> shrink_int64 i >|= fun i -> B.Integer i
       | _ -> Q.Iter.empty
   in
   Q.make
