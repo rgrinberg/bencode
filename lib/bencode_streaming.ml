@@ -44,8 +44,7 @@ module Encode = struct
     and write_str s =
       write_int (String.length s);
       write_char ':';
-      String.blit s 0 buf !pos (String.length s);
-      pos := !pos + String.length s
+      write_raw_str s
     and write_char c =
       Bytes.set buf !pos c;
       incr pos
