@@ -1,7 +1,7 @@
 %{
   open Bencode_types
 %}
-%token <int> INT
+%token <int64> INT
 %token <string> STRING
 %token LIST_START
 %token DICT_START

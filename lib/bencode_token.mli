@@ -2,7 +2,7 @@
 
 type t =
   [
-  | `I of int
+  | `I of int64
   | `S of string
   | `BeginDict
   | `BeginList

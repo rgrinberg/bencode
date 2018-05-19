@@ -1,7 +1,7 @@
 (** Read and write bencode files in OCaml *)
 
 type t =
-  | Integer of int
+  | Integer of int64
   | String of string
   | List of t list
   | Dict of (string * t) list
@@ -45,7 +45,7 @@ val encode_seq : [< dst] -> t sequence -> unit
 (** {2 Helpers} *)
 
 val as_string : t -> string option
-val as_int : t -> int option
+val as_int : t -> int64 option
 val as_list : t -> t list option
 val as_dict : t -> (string * t) list option
 val dict_get : t -> string -> t option
