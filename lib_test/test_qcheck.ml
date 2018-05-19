@@ -2,60 +2,76 @@
 module B = Bencode
 module BS = Bencode_streaming
 
-open QCheck
+module Q = QCheck
+
+let (|>) x f = f x
+
+let arb_bencode =
+  let gen =
+    let open QCheck.Gen in
+    let base =
+      frequency
+        [ 4, (small_int >|= fun i -> B.Integer i);
+          1, (oneofl [min_int; max_int] >|= fun i -> B.Integer i);
+          5, (string >|= fun s -> B.String s);
+        ]
+    in
+    1--3 >>= fun n ->
+    fix (fun sub size ->
+      if size<=0 then base
+      else frequency
+          [ 1, map B.dict_of_list
+              (small_list (pair string (sub (size-1))));
+            1, map (fun l -> B.List l) (small_list (sub(size-1)));
+            2, base;
+          ]) n
+  in
+  let rec shrink b =
+    let open Q.Iter in
+    match b with
+      | B.List l -> Q.Shrink.list ~shrink l >|= fun l->B.List l
+      | B.Integer i -> Q.Shrink.int i >|= fun i -> B.Integer i
+      | _ -> Q.Iter.empty
+  in
+  Q.make
+    ~print:BS.Encode.to_string
+    ~small:BS.Encode.size
+    ~shrink
+    gen
 
 let check_decode_encode =
-  let gen = Arbitrary.(
-    let base = choose
-      [ lift (fun i -> B.Integer i) small_int
-      ; lift (fun s -> B.String s) string
-      ]
-    in
-    fix ~max:3 ~base (fun sub ->
-      choose
-        [ lift B.dict_of_list (list (pair string sub))
-        ; lift (fun l -> B.List l) (list sub)
-        ; sub
-        ]))
-  in
   let prop b = B.eq (B.decode (`String (B.encode_to_string b))) b in
   let name = "bencode_decode_encode_bij" in
-  mk_test ~name ~pp:BS.Encode.to_string ~size:BS.Encode.size gen prop
+  Q.Test.make ~name arb_bencode prop
 
 let check_decode_encode_streaming =
-  let gen = Arbitrary.(
-    let base = choose
-      [ lift (fun i -> B.Integer i) small_int
-      ; lift (fun s -> B.String s) string
-      ]
-    in
-    fix ~max:3 ~base (fun sub ->
-      choose
-        [ lift B.dict_of_list (list (pair string sub))
-        ; lift (fun l -> B.List l) (list sub)
-        ; sub
-        ]))
-  in
-  let prop b = B.eq (BS.Decode.parse_string_exn (BS.Encode.to_string b)) b in
+  let prop b =
+    B.eq (BS.Decode.parse_string_exn (BS.Encode.to_string b)) b in
   let name = "bencode_streaming_decode_encode_bij" in
-  mk_test ~name ~pp:BS.Encode.to_string ~n:2_000 ~size:BS.Encode.size gen prop
+  Q.Test.make ~name arb_bencode prop
 
 let check_decode_encode_token =
-  let (gen : Bencode_token.t list Arbitrary.t) = Arbitrary.(
-    list (choose
-      [ lift (fun i -> `I i) small_int
-      ; lift (fun s -> `S s) string
-      ; among [ `BeginDict; `BeginList; `End ] ]
-    )
-  ) in
+  let (arb_token_l : Bencode_token.t list Q.arbitrary) =
+    let gen = Q.Gen.(
+        small_list (oneof
+            [ map (fun i -> `I i) small_int
+            ; map (fun s -> `S s) string
+            ; oneofl [ `BeginDict; `BeginList; `End ] ]
+        )
+      )
+    and shrink = Q.Shrink.list
+    and print =
+      Q.Print.list (fun b -> Bencode_token.Easy.to_string [b])
+    in
+    Q.make ~shrink ~print gen
+  in
   let prop l =
     let s = Bencode_token.Easy.to_string l in
     let l' = Bencode_token.Easy.(of_string_exn s) in
     l = l'
   in
   let name = "bencode_token_decode_encode_bij" in
-  let pp = PP.list (fun b -> Bencode_token.Easy.to_string [b]) in
-  mk_test ~name ~n:2_000 ~pp ~size:List.length gen prop
+  Q.Test.make ~name ~count:2_000 arb_token_l prop
 
 let props =
   [ check_decode_encode
@@ -64,5 +80,5 @@ let props =
   ]
 
 let () =
-  let _ = QCheck.run_tests props in
+  let _ = QCheck_runner.run_tests props in
   ()

@@ -283,7 +283,7 @@ module Decode = struct
         _fail dec "expected digit or ':', got %c" c
       | ReadString, _ -> assert false
       end
-      
+
   and _refill dec =
     match dec.refill () with
     | Refill_error e -> _fail dec "error during refill: %s" e

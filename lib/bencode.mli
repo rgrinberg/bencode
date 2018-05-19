@@ -1,13 +1,13 @@
 (** Read and write bencode files in OCaml *)
 
-type t = 
+type t =
   | Integer of int
   | String of string
   | List of t list
   | Dict of (string * t) list
 
-type src = [ 
-  | `Channel of in_channel 
+type src = [
+  | `Channel of in_channel
   | `File_path of string
   | `String of string ]
 

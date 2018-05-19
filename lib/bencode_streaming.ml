@@ -1,4 +1,3 @@
-
 type t = Bencode.t
 open Bencode
 
@@ -8,10 +7,13 @@ type 'a sequence = ('a -> unit) -> unit
 (** {2 Serialization (encoding)} *)
 
 module Encode = struct
+  let _len_min_int = String.length (string_of_int min_int)
+
   (* length of an encoded int, in bytes *)
   let _len_int i =
     match i with
     | 0 -> 1
+    | _ when i=min_int -> _len_min_int
     | _ when i < 0 -> 2 + int_of_float (log10 (float_of_int ~-i))
     | _ -> 1 + int_of_float (log10 (float_of_int i))
 
@@ -134,7 +136,7 @@ module Decode = struct
   type partial_state =
     | PS_L of bencode list
     | PS_D of (string*bencode)list  (* in dictionary *)
-    | PS_D_key of string * (string*bencode)list (* parsed key, wait for value *) 
+    | PS_D_key of string * (string*bencode)list (* parsed key, wait for value *)
 
   type t = {
     dec : Bencode_token.Decode.t;

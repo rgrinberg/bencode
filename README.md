@@ -1,4 +1,4 @@
-bencode
+bencode [![Build Status](https://travis-ci.org/rgrinberg/bencode.svg?branch=master)](https://travis-ci.org/rgrinberg/bencode)
 =======
 
 Bencode (`.torrent` file format) reader/writer in OCaml without any
