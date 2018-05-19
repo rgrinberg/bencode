@@ -30,9 +30,10 @@ let arb_bencode =
   let rec shrink_int64 : int64 Q.Shrink.t =
     fun x ->
       let open Q.Iter in
-      ( ( return @@ Int64.div x 2_L )
-        <+> (return @@ Int64.(sub x one))
-      ) >>= shrink_int64
+      if x = 0_L then
+        empty
+      else (     return Int64.(div x 2_L)
+             <+> return Int64.(sub x one) )
   in
   let rec shrink b =
     let open Q.Iter in
