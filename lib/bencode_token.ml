@@ -2,7 +2,7 @@
 
 type t =
   [
-  | `I of int
+  | `I of int64
   | `S of string
   | `BeginDict
   | `BeginList
@@ -14,7 +14,7 @@ type token = t
 type 'a sequence = ('a -> unit) -> unit
 
 let to_string = function
-  | `I i -> string_of_int i
+  | `I i -> Int64.to_string i
   | `S s -> s
   | `BeginDict -> "d"
   | `BeginList -> "l"
@@ -39,7 +39,7 @@ module Encode = struct
   let put enc (tok:token) = match tok with
     | `I i ->
         enc.chr 'i';
-        enc.str (string_of_int i);
+        enc.str (Int64.to_string i);
         enc.chr 'e'
     | `S s ->
         enc.str (string_of_int (String.length s));
@@ -81,7 +81,7 @@ module Decode = struct
     | Refill_await
 
   type t = {
-    mutable cur_i : int;  (* when reading int, or string length *)
+    mutable cur_i : int64;  (* when reading int, or string length *)
     mutable cur_s : Bytes.t; (* when reading string *)
     mutable buf : Bytes.t; (* input buffer *)
     mutable i : int;
@@ -93,7 +93,7 @@ module Decode = struct
   let _refill_stop () = Refill_eof
 
   let _default = {
-    cur_i = 0;
+    cur_i = 0_L;
     cur_s = Bytes.empty;
     buf = Bytes.empty;
     i = 0;
@@ -196,7 +196,7 @@ module Decode = struct
 
   let _yield_int dec i =
     dec.state <- Start;
-    dec.cur_i <- 0;
+    dec.cur_i <- 0_L;
     Next (`I i)
 
   let rec next dec =
@@ -205,12 +205,12 @@ module Decode = struct
     | _ when dec.len = 0 -> _refill dec
     | ReadString ->
       (* bulk transfer. [n] is how many bytes we can transfer right now *)
-      let n = min (Bytes.length dec.cur_s - dec.cur_i) dec.len in
-      Bytes.blit dec.buf dec.i dec.cur_s dec.cur_i n;
+      let n = min (Bytes.length dec.cur_s - (Int64.to_int dec.cur_i)) dec.len in
+      Bytes.blit dec.buf dec.i dec.cur_s (Int64.to_int dec.cur_i) n;
       dec.i <- dec.i + n;
-      dec.cur_i <- dec.cur_i + n;
+      dec.cur_i <- Int64.add dec.cur_i (Int64.of_int n);
       dec.len <- dec.len - n;
-      if Bytes.length dec.cur_s = dec.cur_i
+      if Bytes.length dec.cur_s = (Int64.to_int dec.cur_i)
         then begin
           let s = Bytes.unsafe_to_string dec.cur_s in
           dec.cur_s <- Bytes.empty;
@@ -230,15 +230,15 @@ module Decode = struct
       | Start, 'e' -> Next `End
       | Start, 'i' ->
         dec.state <- ReadInt AnyInt;
-        dec.cur_i <- 0;
+        dec.cur_i <- 0_L;
         next dec
       | Start, '0' ->
         dec.state <- ReadStringLen;
-        dec.cur_i <- 0;
+        dec.cur_i <- 0_L;
         next dec
       | Start, c when _is_digit_nonzero c ->
         dec.state <- ReadStringLen;
-        dec.cur_i <- Char.code c - Char.code '0';
+        dec.cur_i <- Int64.of_int (Char.code c - Char.code '0');
         next dec
       | Start, c ->
         _fail dec "unexpected char for B-encode expr: %c" c
@@ -249,33 +249,35 @@ module Decode = struct
         (* allow exactly one leading 0 *)
         dec.state <- ReadInt ZeroInt;
         next dec
-      | (ReadInt _ | ReadStringLen), '0' when dec.cur_i = 0 ->
+      | (ReadInt _ | ReadStringLen), '0' when dec.cur_i = 0_L ->
         _fail dec "forbidden leading 0 while reading integer"
       | ReadInt AnyInt, c when _is_digit c ->
         (* case where we start reading a positive int *)
-        assert (dec.cur_i = 0);
-        dec.cur_i <- Char.code c - Char.code '0';
+        assert (dec.cur_i = 0_L);
+        dec.cur_i <- Int64.of_int (Char.code c - Char.code '0');
         dec.state <- ReadInt PosInt;
         next dec
       | (ReadInt (PosInt | NegInt) | ReadStringLen), c when _is_digit c ->
         (* add a digit to the integer *)
-        dec.cur_i <- dec.cur_i * 10 + Char.code c - Char.code '0';
+        dec.cur_i <- (Int64.mul dec.cur_i 10_L)
+                     |> Int64.add
+                       (Int64.of_int @@ Char.code c - Char.code '0');
         next dec
       | ReadInt (PosInt | ZeroInt), 'e' ->
         (* finish reading an int *)
         _yield_int dec dec.cur_i
       | ReadInt NegInt, 'e' ->
-        _yield_int dec (- dec.cur_i)
+        _yield_int dec (Int64.neg dec.cur_i)
       | ReadInt AnyInt, 'e' ->
-        _yield_int dec 0
-      | ReadStringLen, ':' when dec.cur_i = 0 ->
+        _yield_int dec 0_L
+      | ReadStringLen, ':' when dec.cur_i = 0_L ->
         dec.state <- Start;
         Next (`S "")
       | ReadStringLen, ':' ->
         (* allocate buffer of the correct size *)
         dec.state <- ReadString;
-        dec.cur_s <- Bytes.make dec.cur_i ' ';
-        dec.cur_i <- 0;
+        dec.cur_s <- Bytes.make (Int64.to_int dec.cur_i) ' ';
+        dec.cur_i <- 0_L;
         next dec
       | ReadInt _, c ->
         _fail dec "expected digit or 'e', got %c" c

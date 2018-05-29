@@ -7,19 +7,13 @@ type 'a sequence = ('a -> unit) -> unit
 (** {2 Serialization (encoding)} *)
 
 module Encode = struct
-  let _len_min_int = String.length (string_of_int min_int)
-
   (* length of an encoded int, in bytes *)
-  let _len_int i =
-    match i with
-    | 0 -> 1
-    | _ when i=min_int -> _len_min_int
-    | _ when i < 0 -> 2 + int_of_float (log10 (float_of_int ~-i))
-    | _ -> 1 + int_of_float (log10 (float_of_int i))
+  let _len_int i = String.length (Int64.to_string i)
 
   (* length of an encoded string, in bytes *)
   let _len_str s =
-    _len_int (String.length s) + 1 + String.length s
+    let payload_len = String.length s in
+    _len_int (Int64.of_int payload_len) + 1 + payload_len
 
   let rec size t = match t with
     | Integer i -> 2 + _len_int i
@@ -30,7 +24,7 @@ module Encode = struct
   let write_in_string t buf o =
     let pos = ref o in
     let rec append t = match t with
-    | Integer i -> write_char 'i'; write_int i; write_char 'e'
+    | Integer i -> write_char 'i'; write_int64 i; write_char 'e'
     | String s -> write_str s
     | List l ->
       write_char 'l';
@@ -40,15 +34,17 @@ module Encode = struct
       write_char 'd';
       List.iter (fun (key, t') -> write_str key; append t') m;
       write_char 'e'
-    and write_int i =
-      let s = string_of_int i in
+    and write_raw_str s =
       Bytes.blit_string s 0 buf !pos (String.length s);
       pos := !pos + String.length s
+    and write_int i =
+      write_raw_str (string_of_int i)
+    and write_int64 i =
+      write_raw_str (Int64.to_string i)
     and write_str s =
       write_int (String.length s);
       write_char ':';
-      String.blit s 0 buf !pos (String.length s);
-      pos := !pos + String.length s
+      write_raw_str s
     and write_char c =
       Bytes.set buf !pos c;
       incr pos
@@ -99,7 +95,7 @@ module Encode = struct
 end
 
 let rec pretty fmt t = match t with
-  | Integer i -> Format.fprintf fmt "%d" i
+  | Integer i -> Format.fprintf fmt "%Ld" i
   | String s -> Format.fprintf fmt "@[<h>\"%s\"@]" s
   | List l ->
     Format.fprintf fmt "@[<hov 2>[@,";

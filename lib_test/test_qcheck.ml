@@ -11,8 +11,9 @@ let arb_bencode =
     let open QCheck.Gen in
     let base =
       frequency
-        [ 4, (small_int >|= fun i -> B.Integer i);
-          1, (oneofl [min_int; max_int] >|= fun i -> B.Integer i);
+        [ 2, (ui64 >|= fun i -> B.Integer i);
+          2, (small_int >|= fun i -> B.Integer (Int64.of_int i));
+          1, (oneofl [Int64.min_int; Int64.max_int] >|= fun i -> B.Integer i);
           5, (string >|= fun s -> B.String s);
         ]
     in
@@ -26,11 +27,19 @@ let arb_bencode =
             2, base;
           ]) n
   in
+  let rec shrink_int64 : int64 Q.Shrink.t =
+    fun x ->
+      let open Q.Iter in
+      if x = 0_L then
+        empty
+      else (     return Int64.(div x 2_L)
+             <+> return Int64.(sub x one) )
+  in
   let rec shrink b =
     let open Q.Iter in
     match b with
       | B.List l -> Q.Shrink.list ~shrink l >|= fun l->B.List l
-      | B.Integer i -> Q.Shrink.int i >|= fun i -> B.Integer i
+      | B.Integer i -> shrink_int64 i >|= fun i -> B.Integer i
       | _ -> Q.Iter.empty
   in
   Q.make
@@ -54,7 +63,7 @@ let check_decode_encode_token =
   let (arb_token_l : Bencode_token.t list Q.arbitrary) =
     let gen = Q.Gen.(
         small_list (oneof
-            [ map (fun i -> `I i) small_int
+            [ map (fun i -> `I (Int64.of_int i)) small_int
             ; map (fun s -> `S s) string
             ; oneofl [ `BeginDict; `BeginList; `End ] ]
         )

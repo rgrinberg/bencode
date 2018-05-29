@@ -22,7 +22,7 @@ and bencode = parse
   }
   | 'i' '-'? ['0'-'9']+ 'e' {
       let str = lexeme lexbuf in
-      INT (int_of_string (
+      INT (Int64.of_string (
           String.sub str 1 (String.length str - 2)
         ))
     }

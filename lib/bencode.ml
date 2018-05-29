@@ -45,7 +45,7 @@ let spaces level = empty_string (level * 2)
 
 let rec pretty_print =
   let rec loop level = function
-    | Integer x -> string_of_int x
+    | Integer x -> Int64.to_string x
     | String x -> Printf.sprintf "<string:%d>" (String.length x)
     | List l ->
       format_list l ~f:(fun buf e ->
@@ -64,7 +64,7 @@ let rec pretty_print =
 
 module Str_conv = struct
   open Printf
-  let of_int i = sprintf "i%de" i
+  let of_int i = sprintf "i%Lde" i
   let of_string s = sprintf "%d:%s" (String.length s) s
   let of_list ?(c='l') s ~f =
     let buf = Buffer.create 10 in
