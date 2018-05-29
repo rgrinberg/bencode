@@ -28,6 +28,8 @@ val dict_of_list : (string*t) list -> t
 
 val pretty_print : t -> string
 
+val pp : Format.formatter -> t -> unit
+
 val decode : [< src] -> t
 
 (** [encode] is not tail recursive *)
