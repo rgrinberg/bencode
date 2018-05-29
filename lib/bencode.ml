@@ -62,6 +62,49 @@ let pretty_print =
           Buffer.add_string buf ";\n")
   in loop 1
 
+let pp (fmt:Format.formatter) (benc:t) =
+  let pp_nest fmt nestlvl = (* prints a comment explaining tree context *)
+    if nestlvl = [] then ()
+    else Format.fprintf fmt " (* %a *)"
+        Format.(pp_print_list
+                  ~pp_sep:(fun fmt () -> pp_print_string fmt " -> ")
+                  (fun fmt str -> pp_print_string fmt (String.escaped str))
+               ) ("^--" :: List.rev nestlvl)
+  in
+  let rec pp_val (nestlvl:string list) fmt = function
+    | Integer x -> Format.pp_print_string fmt @@ Int64.to_string x
+    | String x when String.length x <= 40 ->
+      Format.fprintf fmt "<string:%d:%S>" (String.length x) x
+    | String x ->
+      Format.fprintf fmt "<string:len %d>" (String.length x)
+    | List (( [ String _ | Integer _ ]
+            | [ String _ | Integer _ ; String _ | Integer _ ]
+            ) as lst) ->
+      Format.fprintf fmt "@[<v>[ @[<v>%a @]];@]"
+        Format.(pp_print_list @@ pp_val nestlvl) lst
+    | List lst ->
+      Format.fprintf fmt "@[<v>[  @[<v>%a@]@ ] ;@]"
+        Format.(pp_print_list ~pp_sep:Format.pp_print_cut @@ pp_val nestlvl) lst
+    | Dict lst ->
+      Format.fprintf fmt "@[<v>{  @[<v>%a@]@ } ;@]"
+        Format.(pp_print_list ~pp_sep:Format.pp_print_cut (fun fmt ->
+            (function
+              | key, ((String _ (* don't print newline before if: *)
+                      | List (_::_::[] | _::[] | [])
+                      | Integer _  ) as x) ->
+                Format.fprintf fmt "( %S, @[<v>%a@] );" key
+                  (pp_val []) x
+              | (key,x) ->
+                Format.fprintf fmt "@[<v>( \"@[<v>%a\":@ %a@]@ @]) ; %a"
+                  Format.(fun x -> pp_print_as x 2) (String.escaped key)
+                  (pp_val ((match x with | List _ -> "[]"
+                                         | _ -> "")::key::nestlvl)) x
+                  pp_nest (key::nestlvl)
+            )
+          )) lst
+  in
+  (pp_val []) fmt benc
+
 module Str_conv = struct
   open Printf
   let of_int i = sprintf "i%Lde" i
