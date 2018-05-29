@@ -28,6 +28,8 @@ val dict_of_list : (string*t) list -> t
 
 val pretty_print : t -> string
 
+(** [pp fmt tree] is the bencode [tree] pretty-printed in a human-readable
+    format on [fmt].*)
 val pp : Format.formatter -> t -> unit
 
 val decode : [< src] -> t
