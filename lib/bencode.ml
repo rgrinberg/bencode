@@ -72,7 +72,7 @@ let pp (fmt:Format.formatter) (benc:t) =
                ) ("^--" :: List.rev nestlvl)
   in
   let rec pp_val (nestlvl:string list) fmt = function
-    | Integer x -> Format.pp_print_string fmt @@ Int64.to_string x
+    | Integer x -> Format.fprintf fmt "%Ld" x
     | String x when String.length x <= 40 ->
       Format.fprintf fmt "<string:%d:%S>" (String.length x) x
     | String x ->
