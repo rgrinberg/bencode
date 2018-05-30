@@ -86,21 +86,30 @@ let pp (fmt:Format.formatter) (benc:t) =
       Format.fprintf fmt "@[<v>[  @[<v>%a@]@ ] ;@]"
         Format.(pp_print_list ~pp_sep:Format.pp_print_cut @@ pp_val nestlvl) lst
     | Dict lst ->
+      let last_key = ref "" in
+      let annotate_order key =
+        let annot = match key with (* alert the user if keys are invalid*)
+          | _ when key = !last_key -> " (* error: duplicate key *)"
+          | _ when key > !last_key -> ""
+          | _ -> " (* error: out of order, BEP-003 needs ascending key order *)"
+        in last_key := key ; annot
+      in
       Format.fprintf fmt "@[<v>{  @[<v>%a@]@ } ;@]"
-        Format.(pp_print_list ~pp_sep:Format.pp_print_cut (fun fmt ->
-            (function
-              | key, ((String _ (* don't print newline before if: *)
-                      | List (_::_::[] | _::[] | [])
-                      | Integer _  ) as x) ->
+        Format.(pp_print_list ~pp_sep:Format.pp_print_cut (fun fmt (key,x) ->
+            let order_annotation = annotate_order key in
+            begin match x with
+              | ( String _ (* don't print newline before if: *)
+                | List (_::_::[] | _::[] | [])
+                | Integer _  ) when order_annotation = "" ->
                 Format.fprintf fmt "( %S, @[<v>%a@] );" key
                   (pp_val []) x
-              | (key,x) ->
-                Format.fprintf fmt "@[<v>( \"@[<v>%a\":@ %a@]@ @]) ; %a"
-                  Format.(fun x -> pp_print_as x 2) (String.escaped key)
-                  (pp_val ((match x with | List _ -> "[]"
-                                         | _ -> "")::key::nestlvl)) x
-                  pp_nest (key::nestlvl)
-            )
+              | _ -> Format.fprintf fmt "@[<v>( \"@[<v>%a\":%s@ %a@]@ @]) ; %a"
+                       Format.(fun x -> pp_print_as x 2) (String.escaped key)
+                       order_annotation
+                       (pp_val ((match x with | List _ -> "[]"
+                                              | _ -> "")::key::nestlvl)) x
+                       pp_nest (key::nestlvl)
+            end
           )) lst
   in
   (pp_val []) fmt benc
