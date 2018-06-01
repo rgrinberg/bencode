@@ -86,13 +86,14 @@ let pp (fmt:Format.formatter) (benc:t) =
       Format.fprintf fmt "@[<v>[  @[<v>%a@]@ ] ;@]"
         Format.(pp_print_list ~pp_sep:Format.pp_print_cut @@ pp_val nestlvl) lst
     | Dict lst ->
-      let last_key = ref "" in
-      let annotate_order key =
-        let annot = match key with (* alert the user if keys are invalid*)
-          | _ when key = !last_key -> " (* error: duplicate key *)"
-          | _ when key > !last_key -> ""
+      let last_key = ref None in
+      let annotate_order key = (* alert the user if keys are invalid: *)
+        let annot = match key, !last_key with
+          | _, None -> ""
+          | _, Some prev when key = prev -> " (* error: duplicate key *)"
+          | _, Some prev when key > prev -> ""
           | _ -> " (* error: out of order, BEP-003 needs ascending key order *)"
-        in last_key := key ; annot
+        in last_key := Some key ; annot
       in
       Format.fprintf fmt "@[<v>{  @[<v>%a@]@ } ;@]"
         Format.(pp_print_list ~pp_sep:Format.pp_print_cut (fun fmt (key,x) ->
