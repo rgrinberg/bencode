@@ -1,0 +1,19 @@
+
+(executables
+  ((names (test test_ounit test_qcheck))
+   (libraries (bencode qcheck oUnit))))
+
+(alias
+  ((name runtest)
+   (deps (test.exe))
+   (action  (run ${<}))))
+
+(alias
+  ((name runtest)
+   (deps (test_ounit.exe test.torrent))
+   (action  (run ${<}))))
+
+(alias
+  ((name runtest)
+   (deps (test_qcheck.exe))
+   (action  (run ${<}))))
