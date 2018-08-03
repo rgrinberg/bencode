@@ -1,0 +1,9 @@
+
+(library
+ (name bencode)
+ (public_name bencode)
+ (flags (:standard -safe-string))
+ (wrapped false))
+
+(ocamlyacc (modules bencode_parse))
+(ocamllex (modules bencode_lex))
