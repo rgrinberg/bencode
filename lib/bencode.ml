@@ -41,9 +41,9 @@ let format_list l ~f =
 
 let empty_string ~len = String.make len ' '
 
-let spaces level = empty_string (level * 2)
+let spaces level = empty_string ~len:(level * 2)
 
-let rec pretty_print =
+let pretty_print =
   let rec loop level = function
     | Integer x -> Int64.to_string x
     | String x -> Printf.sprintf "<string:%d>" (String.length x)

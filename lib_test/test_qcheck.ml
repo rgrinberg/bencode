@@ -27,7 +27,7 @@ let arb_bencode =
             2, base;
           ]) n
   in
-  let rec shrink_int64 : int64 Q.Shrink.t =
+  let shrink_int64 : int64 Q.Shrink.t =
     fun x ->
       let open Q.Iter in
       if x = 0_L then
