@@ -5,7 +5,8 @@ bug-reports: "https://github.com/rgrinberg/issues/"
 maintainer: "rudi.grinberg@gmail.com"
 authors: [ "Rudi Grinberg" "Simon Cruanes" ]
 license: "MIT"
-available: [ ocaml-version >= "4.00.1" ]
+available: [ ocaml-version >= "4.02.0" ]
+version: "1.0.2"
 
 build: [
   ["dune" "build" "-p" name "-j" jobs]
