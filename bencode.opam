@@ -8,15 +8,14 @@ license: "MIT"
 available: [ ocaml-version >= "4.00.1" ]
 
 build: [
-  [make "all"]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 build-test: [
-  [make "test"]
+  ["dune" "runtest" "-p"]
 ]
-install: [ [make "install"] ]
-remove: [[make "uninstall"]]
 depends: [
-  "ocamlfind" {build}
+  "dune"      {build}
   "ounit"     {test}
   "qcheck"    {test}
+  "odoc"      {doc}
 ]
