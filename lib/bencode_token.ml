@@ -290,7 +290,7 @@ module Decode = struct
     match dec.refill () with
     | Refill_error e -> _fail dec "error during refill: %s" e
     | Refill_read n when n = 0 -> _refill dec  (* XXX: caution... *)
-    | Refill_read n -> next dec (* available input, next *)
+    | Refill_read _n -> next dec (* available input, next *)
     | Refill_await -> Await
     | Refill_eof ->
         begin match dec.state with
