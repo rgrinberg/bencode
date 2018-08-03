@@ -4,6 +4,7 @@
 (library
   ((name bencode)
    (public_name bencode)
+   (flags (:standard -safe-string))
    (wrapped false)))
 
 (ocamlyacc (bencode_parse))
