@@ -11,7 +11,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 build-test: [
-  ["dune" "runtest" "-p"]
+  ["dune" "runtest" "-p" name]
 ]
 depends: [
   "dune"      {build}
