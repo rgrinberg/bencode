@@ -26,11 +26,13 @@ val dict_of_list : (string*t) list -> t
 
 (** [pretty_print] is not tail recursive (or pretty) *)
 
-val pretty_print : t -> string
+val pp_hum : Format.formatter -> t -> unit
+(** [pp_hum fmt tree] is the bencode [tree] pretty-printed in a human-readable
+    format on [fmt].
+    @since 1.1 *)
 
-(** [pp fmt tree] is the bencode [tree] pretty-printed in a human-readable
-    format on [fmt].*)
-val pp : Format.formatter -> t -> unit
+val pretty_print : t -> string
+(** Simple pretty printer to strings *)
 
 val decode : [< src] -> t
 

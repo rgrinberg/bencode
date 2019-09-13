@@ -62,7 +62,7 @@ let pretty_print =
           Buffer.add_string buf ";\n")
   in loop 1
 
-let pp (fmt:Format.formatter) (benc:t) =
+let pp_hum (fmt:Format.formatter) (benc:t) =
   let pp_nest fmt nestlvl = (* prints a comment explaining tree context *)
     if nestlvl = [] then ()
     else Format.fprintf fmt " (* %a *)"
