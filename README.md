@@ -1,7 +1,7 @@
 bencode [![Build Status](https://travis-ci.org/rgrinberg/bencode.svg?branch=master)](https://travis-ci.org/rgrinberg/bencode)
 =======
 
-Bencode (`.torrent` file format) reader/writer in OCaml without any
+Bencode (`.torrent` [file format](https://en.wikipedia.org/wiki/Bencode)) reader/writer in OCaml without any
 external dependencies.
 
 See `lib/bencode.mli`. Usage is straightforward. There is also a streaming
