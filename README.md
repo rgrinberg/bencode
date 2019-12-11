@@ -7,6 +7,8 @@ external dependencies.
 See `lib/bencode.mli`. Usage is straightforward. There is also a streaming
 API in modules `Bencode_streaming` and `Bencode_token`.
 
+[online documentation here](https://rgrinberg.github.io/bencode/)
+
 ## Installation
 For a findlib based install
 ```sh
@@ -25,7 +27,7 @@ Will return a data structure representing the bencoded form of the following
 type:
 ```ocaml
 type t =
-  | Integer of int
+  | Integer of int64
   | String of string
   | List of t list
   | Dict of (string * t) list
