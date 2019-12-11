@@ -6,7 +6,7 @@ bug-reports: "https://github.com/rgrinberg/issues/"
 maintainer: "rudi.grinberg@gmail.com"
 authors: [ "Rudi Grinberg" "Simon Cruanes" ]
 license: "MIT"
-version: "1.0.2"
+version: "2.0"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name] {with-test}
