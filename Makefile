@@ -1,14 +1,14 @@
 
 all:
-	dune build @install -p bencode
+	dune build @all
 
 clean:
 	dune clean
 
 doc:
-	dune build @doc -p bencode
+	dune build @doc
 
 test:
-	dune runtest -p bencode
+	dune runtest
 
-.PHONY: build clean install uninstall test all doc
+.PHONY: build clean test all doc
