@@ -1,7 +1,7 @@
 
 (executables
   (names test test_ounit test_qcheck)
-  (libraries bencode qcheck oUnit))
+  (libraries bencode qcheck ounit2))
 
 (alias
   (name runtest)
