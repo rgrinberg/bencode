@@ -12,15 +12,14 @@ rule read_fixed buf i n = parse
   | eof { failwith "not enough input" }
 
 and bencode = parse
-  | ['0'-'9']+ ':' {
+  | "0:" { STRING "" }
+  | ['1'-'9'] ['0'-'9']* ':' {
     let str = lexeme lexbuf in
     let len = int_of_string (String.sub str 0 (String.length str - 1)) in
-    STRING (
-      if len = 0 then ""
-      else read_fixed (Bytes.make len ' ') 0 len lexbuf
-      )
+    STRING (read_fixed (Bytes.make len ' ') 0 len lexbuf)
   }
-  | 'i' '-'? ['0'-'9']+ 'e' {
+  | "i0e" { INT Int64.zero }
+  | 'i' '-'? ['1'-'9'] ['0'-'9']* 'e' {
       let str = lexeme lexbuf in
       INT (Int64.of_string (
           String.sub str 1 (String.length str - 2)
@@ -29,7 +28,6 @@ and bencode = parse
   | 'l' { LIST_START }
   | 'd' { DICT_START }
   | 'e' { END }
-  | [' ' '\t' '\n'] { bencode lexbuf }  (* whitespace *)
   | _ as c {
       failwith (
         Printf.sprintf "Unrecognized char: %c. Pos: %d \n" c
